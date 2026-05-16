@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { PaperProvider, MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
 import { useColorScheme } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuthStore } from '../src/store/authStore';
 import { Colors } from '../src/constants';
 
@@ -41,13 +42,15 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <PaperProvider theme={colorScheme === 'dark' ? darkTheme : lightTheme}>
-      <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-    </PaperProvider>
+    <SafeAreaProvider>
+      <PaperProvider theme={colorScheme === 'dark' ? darkTheme : lightTheme}>
+        <StatusBar style="auto" />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 }
