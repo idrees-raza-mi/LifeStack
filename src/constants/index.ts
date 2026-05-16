@@ -5,8 +5,8 @@ export const Colors = {
   secondary: '#A8D8EA',
   secondaryDark: '#8FC8DC',
   secondaryLight: '#D4EEF5',
-  accent: '#F0C4D0',
-  accentLight: '#F8DFE8',
+  accent: '#F4A261',
+  accentLight: '#FAE5D3',
   success: '#A8D8A8',
   successDark: '#7CC47C',
   warning: '#F5D7A8',
@@ -18,7 +18,9 @@ export const Colors = {
   card: '#FFFFFF',
   cardBorder: 'rgba(124, 111, 205, 0.10)',
   text: '#1A1A2E',
+  textDark: '#1A1A2E',
   textSecondary: '#6B7280',
+  textGray: '#6B7280',
   textTertiary: '#9CA3AF',
   textInverse: '#FFFFFF',
   shadow: 'rgba(124, 111, 205, 0.10)',
@@ -37,7 +39,6 @@ export const Colors = {
   peach: '#F5D7A8',
   peachLight: '#FDF0E0',
   white: '#FFFFFF',
-  black: '#000000',
 };
 
 export const HabitColors = [

@@ -19,7 +19,6 @@ const QUOTES = [
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
   const [quoteIndex, setQuoteIndex] = useState(0);
 
   useEffect(() => {
@@ -134,14 +133,6 @@ export default function ProfileScreen() {
           <Switch value={notifications} onValueChange={setNotifications} color={Colors.primary} />
         </View>
         <View style={styles.settingDivider} />
-        <View style={styles.settingRow}>
-          <View style={styles.settingLeft}>
-            <Icon source="theme-light-dark" size={20} color={Colors.primary} />
-            <Text style={styles.settingLabel}>Dark Mode</Text>
-          </View>
-          <Switch value={darkMode} onValueChange={setDarkMode} color={Colors.primary} />
-        </View>
-        <View style={styles.settingDivider} />
         <TouchableOpacity style={styles.settingRow} onPress={handleLogout}>
           <View style={styles.settingLeft}>
             <Icon source="logout" size={20} color={Colors.error} />
@@ -173,7 +164,7 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
   levelNum: { fontSize: 22, fontWeight: '800', color: Colors.white },
-  levelLbl: { fontSize: 9, color: Colors.white + 'CC', fontWeight: '600', marginTop: -2 },
+  levelLbl: { fontSize: 9, color: 'rgba(255,255,255,0.8)', fontWeight: '600', marginTop: -2 },
   xpArea: { flex: 1 },
   xpBarBg: { height: 8, backgroundColor: Colors.lavenderLight, borderRadius: 4, overflow: 'hidden' },
   xpBarFill: { height: '100%', backgroundColor: Colors.primary, borderRadius: 4 },

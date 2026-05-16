@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   levelNumber: { fontSize: 26, fontWeight: '800', color: Colors.white },
-  levelLabel: { fontSize: 10, color: Colors.white + 'CC', fontWeight: '600', marginTop: -2 },
+  levelLabel: { fontSize: 10, color: 'rgba(255,255,255,0.8)', fontWeight: '600', marginTop: -2 },
   xpSection: { flex: 1 },
   xpBarBg: { height: 10, backgroundColor: Colors.lavenderLight, borderRadius: 5, overflow: 'hidden' },
   xpBarFill: { height: '100%', backgroundColor: Colors.primary, borderRadius: 5 },

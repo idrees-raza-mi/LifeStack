@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Icon } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, ShadowStyle } from '../../src/constants';
+import { Colors } from '../../src/constants';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
@@ -29,13 +29,17 @@ export default function TabLayout() {
           bottom: insets.bottom + 12,
           left: 16,
           right: 16,
-          backgroundColor: 'rgba(255,255,255,0.92)',
+          backgroundColor: '#FFFFFF',
           borderRadius: 28,
           height: 64,
           paddingBottom: 4,
           paddingTop: 8,
           borderTopWidth: 0,
-          ...ShadowStyle.floating,
+          shadowColor: '#7C6FCD',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.12,
+          shadowRadius: 20,
+          elevation: 10,
         },
       }}
     >
