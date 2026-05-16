@@ -74,21 +74,21 @@ export default function ProfileScreen() {
       {/* More Features — Quick Access */}
       <SectionHeader title="All Features" />
       <View style={styles.featureGrid}>
-        <TouchableOpacity style={[styles.featureCard, { backgroundColor: Colors.lavenderLight }]} onPress={() => router.push('/(tabs)/goals')} activeOpacity={0.7}>
+        <TouchableOpacity style={[styles.featureCard, { backgroundColor: Colors.lavenderLight }]} onPress={() => router.push('/(features)/goals')} activeOpacity={0.7}>
           <View style={styles.featureIcon}>
             <Icon source="target" size={24} color={Colors.primary} />
           </View>
           <Text style={styles.featureName}>Goals</Text>
           <Text style={styles.featureCount}>3 active</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.featureCard, { backgroundColor: Colors.skyBlueLight }]} onPress={() => router.push('/(tabs)/routines')} activeOpacity={0.7}>
+        <TouchableOpacity style={[styles.featureCard, { backgroundColor: Colors.skyBlueLight }]} onPress={() => router.push('/(features)/routines')} activeOpacity={0.7}>
           <View style={styles.featureIcon}>
             <Icon source="repeat-variant" size={24} color={Colors.secondary} />
           </View>
           <Text style={styles.featureName}>Routines</Text>
           <Text style={styles.featureCount}>5 total</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.featureCard, { backgroundColor: Colors.roseLight }]} onPress={() => router.push('/(tabs)/gym')} activeOpacity={0.7}>
+        <TouchableOpacity style={[styles.featureCard, { backgroundColor: Colors.roseLight }]} onPress={() => router.push('/(features)/gym')} activeOpacity={0.7}>
           <View style={styles.featureIcon}>
             <Icon source="dumbbell" size={24} color={Colors.accent} />
           </View>
