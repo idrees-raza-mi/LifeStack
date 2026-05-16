@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, FAB, Dialog, Portal, TextInput, Button, IconButton, Icon, Chip } from 'react-native-paper';
 import { ScreenWrapper, Card } from '../../src/components/ui/ScreenWrapper';
@@ -18,6 +18,7 @@ export default function TasksScreen() {
   useEffect(() => { loadTasks(); }, []);
 
   const pendingTasks = tasks.filter(t => !t.completed).length;
+  const doneToday = useMemo(() => tasks.filter(t => t.completed && t.completedAt && isToday(parseISO(t.completedAt))).length, [tasks]);
   const filteredTasks = tasks.filter(t => {
     if (filter === 'completed') return t.completed;
     if (filter === 'today') return t.dueDate && isToday(parseISO(t.dueDate));
@@ -69,7 +70,7 @@ export default function TasksScreen() {
 
       <Card style={styles.summaryCard}>
         <View style={styles.summaryRow}>
-          <StatCard icon="checkbox-marked" label="Done Today" value="5" color={Colors.mint} />
+          <StatCard icon="checkbox-marked" label="Done Today" value={String(doneToday)} color={Colors.mint} />
           <StatCard icon="clock-outline" label="Pending" value={String(pendingTasks)} color={Colors.peach} />
         </View>
       </Card>

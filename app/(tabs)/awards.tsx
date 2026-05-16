@@ -1,55 +1,122 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Icon } from 'react-native-paper';
 import { ScreenWrapper, Card } from '../../src/components/ui/ScreenWrapper';
 import { PageHeader, SectionHeader, StatCard } from '../../src/components/ui/PageHeader';
 import { Colors, ShadowStyle, AchievementColors } from '../../src/constants';
-
-interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  tier: 'bronze' | 'silver' | 'gold' | 'diamond';
-  progress: number;
-  unlocked: boolean;
-  category: string;
-}
-
-const ACHIEVEMENTS: Achievement[] = [
-  { id: '1', title: 'Early Bird', description: 'Complete 7 morning habits', icon: 'weather-sunny', tier: 'bronze', progress: 100, unlocked: true, category: 'Consistency' },
-  { id: '2', title: 'Streak Master', description: '7-day perfect streak', icon: 'fire', tier: 'silver', progress: 100, unlocked: true, category: 'Consistency' },
-  { id: '3', title: 'Iron Will', description: '30-day streak', icon: 'shield-star', tier: 'gold', progress: 73, unlocked: false, category: 'Consistency' },
-  { id: '4', title: 'Fitness Freak', description: '20 workouts completed', icon: 'dumbbell', tier: 'silver', progress: 100, unlocked: true, category: 'Fitness' },
-  { id: '5', title: 'Runner Up', description: 'Run 50km total', icon: 'run', tier: 'gold', progress: 45, unlocked: false, category: 'Fitness' },
-  { id: '6', title: 'Bookworm', description: 'Read for 30 days', icon: 'book-open-variant', tier: 'silver', progress: 80, unlocked: false, category: 'Reading' },
-  { id: '7', title: 'Deep Focus', description: '5 hours of focus time', icon: 'brain', tier: 'gold', progress: 60, unlocked: false, category: 'Focus' },
-  { id: '8', title: 'Zen Master', description: 'Meditate 15 days', icon: 'meditation', tier: 'diamond', progress: 33, unlocked: false, category: 'Health' },
-  { id: '9', title: 'Hydrated', description: 'Drink water 7 days', icon: 'water', tier: 'bronze', progress: 100, unlocked: true, category: 'Health' },
-  { id: '10', title: 'Century Club', description: '100 habits completed', icon: 'trophy', tier: 'diamond', progress: 42, unlocked: false, category: 'Consistency' },
-];
-
-const TIER_COLORS: Record<string, string> = {
-  bronze: '#CD7F32',
-  silver: '#A0A0B0',
-  gold: '#FFD700',
-  diamond: '#7DD3FC',
-};
-
-const TIER_BG: Record<string, string> = {
-  bronze: '#FFF0E0',
-  silver: '#F0F0F5',
-  gold: '#FFF8E0',
-  diamond: '#E0F7FF',
-};
+import { useHabitStore } from '../../src/store/habitStore';
+import { useTaskStore } from '../../src/store/taskStore';
+import { useGymStore } from '../../src/store/gymStore';
+import { format, startOfWeek, addDays, subDays } from 'date-fns';
 
 export default function AwardsScreen() {
-  const [level, setLevel] = useState(7);
-  const [xp, setXp] = useState(340);
-  const xpNext = 500;
+  const { habits, logs, loadHabits } = useHabitStore();
+  const { tasks, loadTasks } = useTaskStore();
+  const { sessions, loadSessions } = useGymStore();
 
-  const unlocked = ACHIEVEMENTS.filter(a => a.unlocked).length;
-  const total = ACHIEVEMENTS.length;
+  useEffect(() => {
+    loadHabits();
+    loadTasks();
+    loadSessions();
+    const end = format(new Date(), 'yyyy-MM-dd');
+    const start = format(subDays(new Date(), 7), 'yyyy-MM-dd');
+    habits.forEach(h => {
+      const store = useHabitStore.getState();
+      store.loadLogs(h.id, start, end);
+    });
+  }, []);
+
+  const totalCompletions = useMemo(() => {
+    const habitDone = logs.filter(l => l.completed).length;
+    const taskDone = tasks.filter(t => t.completed).length;
+    return habitDone + taskDone;
+  }, [logs, tasks]);
+
+  const level = Math.floor(totalCompletions / 20) + 1;
+  const xp = totalCompletions % 20;
+  const xpNext = 20;
+  const xpPercent = (xp / xpNext) * 100;
+
+  const weekHabits = useMemo(() => {
+    const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    const today = format(new Date(), 'yyyy-MM-dd');
+    let count = 0;
+    const current = new Date(weekStart);
+    const end = new Date(today);
+    while (current <= end) {
+      const dateStr = format(current, 'yyyy-MM-dd');
+      const dayLogs = logs.filter(l => l.date === dateStr && l.completed);
+      if (dayLogs.length > 0) count++;
+      current.setDate(current.getDate() + 1);
+    }
+    return count;
+  }, [logs]);
+
+  // Real achievements based on data
+  const achievements = useMemo(() => {
+    const list: { id: string; title: string; description: string; icon: string; tier: 'bronze' | 'silver' | 'gold' | 'diamond'; progress: number; unlocked: boolean; category: string }[] = [];
+
+    // First habit completed
+    const hasDoneHabit = logs.some(l => l.completed);
+    list.push({
+      id: '1', title: 'First Step', description: 'Complete your first habit', icon: 'star',
+      tier: 'bronze', progress: hasDoneHabit ? 100 : 0, unlocked: hasDoneHabit, category: 'Getting Started',
+    });
+
+    // 10 completions
+    const tenDone = totalCompletions >= 10;
+    list.push({
+      id: '2', title: 'Getting Consistent', description: 'Reach 10 total completions', icon: 'fire',
+      tier: 'bronze', progress: Math.min(Math.round((totalCompletions / 10) * 100), 100), unlocked: tenDone, category: 'Consistency',
+    });
+
+    // 50 completions
+    const fiftyDone = totalCompletions >= 50;
+    list.push({
+      id: '3', title: 'Half Century', description: 'Reach 50 total completions', icon: 'shield-star',
+      tier: 'silver', progress: Math.min(Math.round((totalCompletions / 50) * 100), 100), unlocked: fiftyDone, category: 'Consistency',
+    });
+
+    // 100 completions
+    const hundredDone = totalCompletions >= 100;
+    list.push({
+      id: '4', title: 'Century Club', description: 'Reach 100 total completions', icon: 'trophy',
+      tier: 'gold', progress: Math.min(Math.round((totalCompletions / 100) * 100), 100), unlocked: hundredDone, category: 'Consistency',
+    });
+
+    // 5 habits created
+    const fiveHabits = habits.length >= 5;
+    list.push({
+      id: '5', title: 'Habit Stacker', description: 'Create 5 habits', icon: 'checkbox-marked-circle-outline',
+      tier: 'silver', progress: Math.min(Math.round((habits.length / 5) * 100), 100), unlocked: fiveHabits, category: 'Building',
+    });
+
+    // First task done
+    const hasDoneTask = tasks.some(t => t.completed);
+    list.push({
+      id: '6', title: 'Task Crusher', description: 'Complete your first task', icon: 'format-list-checks',
+      tier: 'bronze', progress: hasDoneTask ? 100 : 0, unlocked: hasDoneTask, category: 'Getting Started',
+    });
+
+    // First workout
+    const hasWorkout = sessions.length > 0;
+    list.push({
+      id: '7', title: 'First Sweat', description: 'Complete your first workout', icon: 'dumbbell',
+      tier: 'bronze', progress: hasWorkout ? 100 : 0, unlocked: hasWorkout, category: 'Fitness',
+    });
+
+    // 7-day streak (1 week consecutive)
+    const streak7 = weekHabits >= 7;
+    list.push({
+      id: '8', title: 'Iron Will', description: '7-day active streak', icon: 'meditation',
+      tier: 'silver', progress: Math.min(Math.round((weekHabits / 7) * 100), 100), unlocked: streak7, category: 'Consistency',
+    });
+
+    return list;
+  }, [logs, tasks, habits, sessions, totalCompletions, weekHabits]);
+
+  const unlocked = achievements.filter(a => a.unlocked).length;
+  const total = achievements.length;
 
   return (
     <ScreenWrapper scroll>
@@ -64,59 +131,38 @@ export default function AwardsScreen() {
           </View>
           <View style={styles.xpSection}>
             <View style={styles.xpBarBg}>
-              <View style={[styles.xpBarFill, { width: `${(xp / xpNext) * 100}%` }]} />
+              <View style={[styles.xpBarFill, { width: `${xpPercent}%` }]} />
             </View>
             <Text style={styles.xpText}>{xp} / {xpNext} XP</Text>
           </View>
         </View>
         <View style={styles.levelRewards}>
           <Icon source="fire" size={16} color={Colors.peach} />
-          <Text style={styles.levelRewardText}>12 day streak</Text>
+          <Text style={styles.levelRewardText}>{weekHabits} day{weekHabits !== 1 ? 's' : ''} this week</Text>
           <View style={styles.dot} />
-          <Icon source="calendar-check" size={16} color={Colors.mint} />
-          <Text style={styles.levelRewardText}>89% completion</Text>
-        </View>
-      </Card>
-
-      {/* Weekly Challenge */}
-      <Card style={[styles.challengeCard, { backgroundColor: Colors.lavenderLight }]}>
-        <View style={styles.challengeRow}>
-          <View style={styles.challengeIcon}>
-            <Icon source="trophy" size={28} color={Colors.primary} />
-          </View>
-          <View style={styles.challengeInfo}>
-            <Text style={styles.challengeTitle}>7-Day Streak Challenge</Text>
-            <Text style={styles.challengeSub}>Complete 7 habits daily for a week</Text>
-            <View style={styles.challengeBarBg}>
-              <View style={[styles.challengeBarFill, { width: '57%' }]} />
-            </View>
-            <Text style={styles.challengeCount}>4/7 days complete</Text>
-          </View>
-          <View style={styles.challengeReward}>
-            <Icon source="diamond" size={24} color={AchievementColors.diamond} />
-            <Text style={styles.challengeRewardLabel}>Reward</Text>
-          </View>
+          <Icon source="trophy" size={16} color={Colors.mint} />
+          <Text style={styles.levelRewardText}>{totalCompletions} total</Text>
         </View>
       </Card>
 
       <SectionHeader title="Achievements" />
 
-      {ACHIEVEMENTS.map(a => (
+      {achievements.map(a => (
         <TouchableOpacity key={a.id} activeOpacity={0.7}>
           <Card style={[styles.achievementCard, !a.unlocked && styles.achievementLocked]}>
-            <View style={[styles.achievementIconWrap, { backgroundColor: TIER_BG[a.tier] }]}>
-              <Icon source={a.icon as any} size={22} color={a.unlocked ? TIER_COLORS[a.tier] : Colors.textTertiary} />
+            <View style={[styles.achievementIconWrap, { backgroundColor: (a.unlocked ? AchievementColors[a.tier] : Colors.textTertiary) + '20' }]}>
+              <Icon source={a.icon as any} size={22} color={a.unlocked ? (AchievementColors[a.tier] || Colors.primary) : Colors.textTertiary} />
             </View>
             <View style={styles.achievementInfo}>
               <View style={styles.achievementHeader}>
                 <Text style={[styles.achievementTitle, !a.unlocked && styles.textLocked]}>{a.title}</Text>
-                <View style={[styles.tierBadge, { backgroundColor: TIER_BG[a.tier] }]}>
-                  <Text style={[styles.tierText, { color: TIER_COLORS[a.tier] }]}>{a.tier}</Text>
+                <View style={[styles.tierBadge, { backgroundColor: (a.unlocked ? AchievementColors[a.tier] : Colors.textTertiary) + '20' }]}>
+                  <Text style={[styles.tierText, { color: a.unlocked ? (AchievementColors[a.tier] || Colors.primary) : Colors.textTertiary }]}>{a.tier}</Text>
                 </View>
               </View>
               <Text style={styles.achievementDesc}>{a.description}</Text>
               <View style={styles.achievementBarBg}>
-                <View style={[styles.achievementBarFill, { width: `${a.progress}%`, backgroundColor: a.unlocked ? TIER_COLORS[a.tier] : Colors.textTertiary }]} />
+                <View style={[styles.achievementBarFill, { width: `${a.progress}%`, backgroundColor: a.unlocked ? (AchievementColors[a.tier] || Colors.primary) : Colors.textTertiary }]} />
               </View>
             </View>
             {a.unlocked ? (
@@ -149,21 +195,6 @@ const styles = StyleSheet.create({
   levelRewards: { flexDirection: 'row', alignItems: 'center', marginTop: 14, gap: 4 },
   dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: Colors.textTertiary, marginHorizontal: 8 },
   levelRewardText: { fontSize: 12, color: Colors.textSecondary, fontWeight: '500' },
-  challengeCard: { marginBottom: 16 },
-  challengeRow: { flexDirection: 'row', alignItems: 'center' },
-  challengeIcon: {
-    width: 52, height: 52, borderRadius: 18,
-    backgroundColor: Colors.white, justifyContent: 'center', alignItems: 'center',
-    marginRight: 14, ...ShadowStyle.card,
-  },
-  challengeInfo: { flex: 1 },
-  challengeTitle: { fontSize: 15, fontWeight: '700', color: Colors.text },
-  challengeSub: { fontSize: 11, color: Colors.textSecondary, marginTop: 1 },
-  challengeBarBg: { height: 6, backgroundColor: Colors.white, borderRadius: 3, marginTop: 8, overflow: 'hidden' },
-  challengeBarFill: { height: '100%', backgroundColor: Colors.primary, borderRadius: 3 },
-  challengeCount: { fontSize: 11, color: Colors.textSecondary, marginTop: 2 },
-  challengeReward: { alignItems: 'center', marginLeft: 12 },
-  challengeRewardLabel: { fontSize: 9, color: Colors.textTertiary, marginTop: 2, fontWeight: '600' },
   achievementCard: {
     flexDirection: 'row', alignItems: 'center', marginBottom: 10,
   },

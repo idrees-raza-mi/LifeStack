@@ -60,12 +60,11 @@ interface HabitCardProps {
   color: string;
   progress: number;
   streak: number;
-  time?: string;
   completed: boolean;
   onToggle: () => void;
 }
 
-export function HabitCard({ name, icon, color, progress, streak, time, completed, onToggle }: HabitCardProps) {
+export function HabitCard({ name, icon, color, progress, streak, completed, onToggle }: HabitCardProps) {
   return (
     <TouchableOpacity
       style={[styles.habitCard, completed && styles.habitDone]}
@@ -84,7 +83,6 @@ export function HabitCard({ name, icon, color, progress, streak, time, completed
               <Text style={styles.streakText}>{streak} day{streak > 1 ? 's' : ''}</Text>
             </View>
           )}
-          {time && <Text style={styles.habitTime}>{time}</Text>}
         </View>
       </View>
       <View style={styles.habitRight}>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { View, FlatList, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, FAB, Dialog, Portal, TextInput, Button, IconButton, Icon, Chip } from 'react-native-paper';
 import { router } from 'expo-router';
@@ -8,7 +8,7 @@ import { EmptyState } from '../../src/components/ui/EmptyState';
 import { useGymStore } from '../../src/store/gymStore';
 import { WorkoutSession, WorkoutSet, Exercise } from '../../src/types';
 import { Colors, ShadowStyle } from '../../src/constants';
-import { format } from 'date-fns';
+import { format, startOfWeek } from 'date-fns';
 
 export default function GymScreen() {
   const { sessions, currentSession, currentSets, exercises, loadSessions, loadExercises, startSession, endSession, loadSessionSets, addSet, toggleSet, deleteSession } = useGymStore();
@@ -21,6 +21,11 @@ export default function GymScreen() {
   const [duration, setDuration] = useState('');
 
   useEffect(() => { loadSessions(); loadExercises(); }, []);
+
+  const thisWeek = useMemo(() => {
+    const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    return sessions.filter(s => s.date >= weekStart).length;
+  }, [sessions]);
 
   const handleStart = async () => {
     if (!sessionName.trim()) return;
@@ -128,7 +133,7 @@ export default function GymScreen() {
       <PageHeader title="Gym" subtitle={`${sessions.length} workouts`} icon="dumbbell" />
       <View style={styles.statsRow}>
         <StatCard icon="dumbbell" label="Workouts" value={String(sessions.length)} color={Colors.primary} />
-        <StatCard icon="fire" label="This Week" value="3" color={Colors.accent} />
+        <StatCard icon="fire" label="This Week" value={String(thisWeek)} color={Colors.accent} />
       </View>
       {sessions.length === 0 ? (
         <EmptyState icon="dumbbell" title="No workouts yet" description="Start tracking your gym sessions" />

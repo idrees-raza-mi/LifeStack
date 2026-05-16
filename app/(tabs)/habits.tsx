@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { View, FlatList, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Text, FAB, Dialog, Portal, TextInput, Button, IconButton, Icon, Chip } from 'react-native-paper';
 import { ScreenWrapper, Card } from '../../src/components/ui/ScreenWrapper';
@@ -8,9 +8,25 @@ import { EmptyState } from '../../src/components/ui/EmptyState';
 import { useHabitStore } from '../../src/store/habitStore';
 import { Habit } from '../../src/types';
 import { Colors, HabitColors, HabitIcons, ShadowStyle } from '../../src/constants';
-import { format, addDays, startOfWeek, isToday } from 'date-fns';
+import { format, addDays, startOfWeek, subDays, isSameDay, parseISO } from 'date-fns';
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+function computeStreak(logs: { habitId: string; date: string; completed: boolean }[], habitId: string): number {
+  const habitLogs = logs.filter(l => l.habitId === habitId && l.completed).map(l => l.date).sort().reverse();
+  if (habitLogs.length === 0) return 0;
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const date = format(subDays(today, i), 'yyyy-MM-dd');
+    if (habitLogs.includes(date)) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
 
 export default function HabitsScreen() {
   const { habits, loadHabits, addHabit, toggleLog, logs, loadLogs } = useHabitStore();
@@ -23,10 +39,14 @@ export default function HabitsScreen() {
 
   useEffect(() => {
     loadHabits();
+  }, []);
+
+  useEffect(() => {
+    if (habits.length === 0) return;
     const start = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
     const end = format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 6), 'yyyy-MM-dd');
     habits.forEach(h => loadLogs(h.id, start, end));
-  }, []);
+  }, [habits.length]);
 
   const today = format(selectedDate, 'yyyy-MM-dd');
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -34,6 +54,21 @@ export default function HabitsScreen() {
 
   const completedToday = habits.filter(h => logs.some(l => l.habitId === h.id && l.date === today && l.completed)).length;
   const weeklyProgress = habits.length > 0 ? Math.round((completedToday / habits.length) * 100) : 0;
+
+  const maxStreak = useMemo(() => {
+    if (habits.length === 0) return 0;
+    return Math.max(...habits.map(h => computeStreak(logs, h.id)));
+  }, [logs, habits]);
+
+  const weekCompletionsTotal = useMemo(() => {
+    const weekStartStr = format(weekStart, 'yyyy-MM-dd');
+    const weekEndStr = format(addDays(weekStart, 6), 'yyyy-MM-dd');
+    const weekLogs = logs.filter(l => l.date >= weekStartStr && l.date <= weekEndStr && l.completed);
+    return weekLogs.length;
+  }, [logs, weekStart]);
+
+  const totalPossible = habits.length * 7;
+  const weekDisplay = `${weekCompletionsTotal}/${totalPossible}`;
 
   const handleToggle = useCallback(async (habitId: string) => {
     await toggleLog(habitId, today);
@@ -58,7 +93,7 @@ export default function HabitsScreen() {
         right={
           <TouchableOpacity style={styles.streakBadgeLarge} activeOpacity={0.7}>
             <Icon source="fire" size={18} color={Colors.peach} />
-            <Text style={styles.streakTextLarge}>12</Text>
+            <Text style={styles.streakTextLarge}>{maxStreak}</Text>
           </TouchableOpacity>
         }
       />
@@ -75,9 +110,8 @@ export default function HabitsScreen() {
             </View>
           </View>
           <View style={styles.progressStats}>
-            <StatCard icon="fire" label="Streak" value="12 days" color={Colors.peach} />
-            <StatCard icon="calendar-check" label="This Week" value="24/35" color={Colors.primary} />
-            <StatCard icon="star" label="Avg Score" value="89%" color={Colors.mint} />
+            <StatCard icon="fire" label="Streak" value={`${maxStreak} days`} color={Colors.peach} />
+            <StatCard icon="calendar-check" label="This Week" value={weekDisplay} color={Colors.primary} />
           </View>
         </View>
       </Card>
@@ -133,6 +167,7 @@ export default function HabitsScreen() {
           const done = habitLogs.some(l => l.date === today && l.completed);
           const weekCompletions = habitLogs.filter(l => l.completed).length;
           const progress = Math.round((weekCompletions / 7) * 100);
+          const streak = computeStreak(logs, habit.id);
           return (
             <HabitCard
               key={habit.id}
@@ -140,8 +175,7 @@ export default function HabitsScreen() {
               icon={habit.icon}
               color={habit.color}
               progress={progress}
-              streak={12}
-              time="08:00 AM"
+              streak={streak}
               completed={done}
               onToggle={() => handleToggle(habit.id)}
             />

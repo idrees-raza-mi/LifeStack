@@ -1,12 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Icon, Switch, Button } from 'react-native-paper';
 import { ScreenWrapper, Card } from '../../src/components/ui/ScreenWrapper';
 import { PageHeader, StatCard, SectionHeader } from '../../src/components/ui/PageHeader';
-import { ProgressCard } from '../../src/components/ui/StatCard';
 import { Colors, ShadowStyle } from '../../src/constants';
 import { useAuthStore } from '../../src/store/authStore';
+import { useHabitStore } from '../../src/store/habitStore';
+import { useTaskStore } from '../../src/store/taskStore';
+import { useGoalStore } from '../../src/store/goalStore';
+import { useRoutineStore } from '../../src/store/routineStore';
 import { router } from 'expo-router';
+import { format, startOfWeek, addDays, subDays } from 'date-fns';
 
 const QUOTES = [
   '"Small daily improvements lead to stunning results."',
@@ -18,12 +22,63 @@ const QUOTES = [
 
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
+  const { habits, logs, loadHabits, loadLogs } = useHabitStore();
+  const { tasks, loadTasks } = useTaskStore();
+  const { goals, loadGoals } = useGoalStore();
+  const { routines, loadRoutines } = useRoutineStore();
   const [notifications, setNotifications] = useState(true);
   const [quoteIndex, setQuoteIndex] = useState(0);
 
   useEffect(() => {
     setQuoteIndex(Math.floor(Math.random() * QUOTES.length));
+    loadHabits();
+    loadTasks();
+    loadGoals();
+    loadRoutines();
   }, []);
+
+  useEffect(() => {
+    if (habits.length === 0) return;
+    const start = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    const end = format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 6), 'yyyy-MM-dd');
+    habits.forEach(h => loadLogs(h.id, format(subDays(new Date(), 30), 'yyyy-MM-dd'), end));
+  }, [habits.length]);
+
+  const maxStreak = useMemo(() => {
+    if (habits.length === 0) return 0;
+    const today = new Date();
+    let bestStreak = 0;
+    for (const habit of habits) {
+      const habitDates = logs.filter(l => l.habitId === habit.id && l.completed).map(l => l.date).sort().reverse();
+      let streak = 0;
+      for (let i = 0; i < 365; i++) {
+        const date = format(subDays(today, i), 'yyyy-MM-dd');
+        if (habitDates.includes(date)) { streak++; } else { break; }
+      }
+      if (streak > bestStreak) bestStreak = streak;
+    }
+    return bestStreak;
+  }, [logs, habits]);
+
+  const completedTotal = useMemo(() => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const todayLogs = logs.filter(l => l.date === today && l.completed).length;
+    const todayTasks = tasks.filter(t => t.completed).length;
+    return todayLogs + todayTasks;
+  }, [logs, tasks]);
+
+  const activeGoals = goals.filter(g => g.status === 'active').length;
+  const totalRoutines = routines.length;
+
+  const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekStats = Array.from({ length: 7 }, (_, i) => {
+    const date = format(addDays(weekStart, i), 'yyyy-MM-dd');
+    const dayLogs = logs.filter(l => l.completed && l) || [];
+    const count = dayLogs.filter(l => l.date === date).length;
+    return { label: weekDays[i], done: count > 0 };
+  });
+  const activeDays = weekStats.filter(d => d.done).length;
 
   const handleLogout = async () => {
     await logout();
@@ -43,32 +98,9 @@ export default function ProfileScreen() {
 
       {/* Stats Row */}
       <View style={styles.statsRow}>
-        <StatCard icon="fire" label="Streak" value="12 days" color={Colors.peach} />
-        <StatCard icon="checkbox-marked" label="Completed" value="89" color={Colors.mint} />
+        <StatCard icon="fire" label="Streak" value={`${maxStreak} days`} color={Colors.peach} />
+        <StatCard icon="checkbox-marked" label="Today" value={String(completedTotal)} color={Colors.mint} />
       </View>
-
-      {/* Level Card */}
-      <Card style={styles.levelCard}>
-        <View style={styles.levelRow}>
-          <View style={styles.levelBadge}>
-            <Text style={styles.levelNum}>7</Text>
-            <Text style={styles.levelLbl}>Level</Text>
-          </View>
-          <View style={styles.xpArea}>
-            <View style={styles.xpBarBg}>
-              <View style={[styles.xpBarFill, { width: '68%' }]} />
-            </View>
-            <Text style={styles.xpText}>340 / 500 XP</Text>
-          </View>
-        </View>
-        <View style={styles.levelRewards}>
-          <Icon source="trophy" size={14} color={Colors.primary} />
-          <Text style={styles.levelRewardText}>12 achievements</Text>
-          <View style={styles.dot} />
-          <Icon source="star" size={14} color={Colors.peach} />
-          <Text style={styles.levelRewardText}>Top 15%</Text>
-        </View>
-      </Card>
 
       {/* More Features — Quick Access */}
       <SectionHeader title="All Features" />
@@ -78,14 +110,14 @@ export default function ProfileScreen() {
             <Icon source="target" size={24} color={Colors.primary} />
           </View>
           <Text style={styles.featureName}>Goals</Text>
-          <Text style={styles.featureCount}>3 active</Text>
+          <Text style={styles.featureCount}>{activeGoals} active</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.featureCard, { backgroundColor: Colors.skyBlueLight }]} onPress={() => router.push('/(features)/routines')} activeOpacity={0.7}>
           <View style={styles.featureIcon}>
             <Icon source="repeat-variant" size={24} color={Colors.secondary} />
           </View>
           <Text style={styles.featureName}>Routines</Text>
-          <Text style={styles.featureCount}>5 total</Text>
+          <Text style={styles.featureCount}>{totalRoutines} total</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.featureCard, { backgroundColor: Colors.roseLight }]} onPress={() => router.push('/(features)/gym')} activeOpacity={0.7}>
           <View style={styles.featureIcon}>
@@ -106,19 +138,16 @@ export default function ProfileScreen() {
       <SectionHeader title="Weekly Stats" />
       <Card style={styles.weeklyCard}>
         <View style={styles.weekRow}>
-          {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => {
-            const done = [true, true, true, true, true, false, false][i];
-            return (
-              <View key={i} style={styles.weekDay}>
-                <Text style={styles.weekDayLabel}>{d}</Text>
-                <View style={[styles.weekDayDot, done && styles.weekDayDotDone]} />
-              </View>
-            );
-          })}
+          {weekStats.map((d, i) => (
+            <View key={i} style={styles.weekDay}>
+              <Text style={styles.weekDayLabel}>{d.label}</Text>
+              <View style={[styles.weekDayDot, d.done && styles.weekDayDotDone]} />
+            </View>
+          ))}
         </View>
         <View style={styles.weekStats}>
-          <Text style={styles.weekStatText}>5/7 days active</Text>
-          <Text style={styles.weekStatText}>71% this week</Text>
+          <Text style={styles.weekStatText}>{activeDays}/7 days active</Text>
+          <Text style={styles.weekStatText}>{Math.round((activeDays / 7) * 100)}% this week</Text>
         </View>
       </Card>
 
@@ -156,22 +185,6 @@ const styles = StyleSheet.create({
   profileName: { fontSize: 22, fontWeight: '800', color: Colors.text },
   profileEmail: { fontSize: 13, color: Colors.textSecondary, marginTop: 2 },
   statsRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
-  levelCard: { marginBottom: 16 },
-  levelRow: { flexDirection: 'row', alignItems: 'center' },
-  levelBadge: {
-    width: 56, height: 56, borderRadius: 18,
-    backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center',
-    marginRight: 14,
-  },
-  levelNum: { fontSize: 22, fontWeight: '800', color: Colors.white },
-  levelLbl: { fontSize: 9, color: 'rgba(255,255,255,0.8)', fontWeight: '600', marginTop: -2 },
-  xpArea: { flex: 1 },
-  xpBarBg: { height: 8, backgroundColor: Colors.lavenderLight, borderRadius: 4, overflow: 'hidden' },
-  xpBarFill: { height: '100%', backgroundColor: Colors.primary, borderRadius: 4 },
-  xpText: { fontSize: 11, color: Colors.textSecondary, marginTop: 4, fontWeight: '600' },
-  levelRewards: { flexDirection: 'row', alignItems: 'center', marginTop: 14, gap: 4 },
-  dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: Colors.textTertiary, marginHorizontal: 6 },
-  levelRewardText: { fontSize: 11, color: Colors.textSecondary, fontWeight: '500' },
   featureGrid: { flexDirection: 'row', gap: 10, marginBottom: 20 },
   featureCard: {
     flex: 1, borderRadius: 20, padding: 16, alignItems: 'center',

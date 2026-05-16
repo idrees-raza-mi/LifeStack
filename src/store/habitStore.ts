@@ -54,7 +54,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       'SELECT * FROM habit_logs WHERE habit_id = ? AND date >= ? AND date <= ? ORDER BY date',
       habitId, startDate, endDate
     );
-    const logs: HabitLog[] = rows.map(r => ({
+    const newLogs: HabitLog[] = rows.map(r => ({
       id: r.id,
       habitId: r.habit_id,
       userId: r.user_id,
@@ -62,7 +62,10 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       completed: !!r.completed,
       note: r.note,
     }));
-    set({ logs });
+    set(state => {
+      const filtered = state.logs.filter(l => !(l.habitId === habitId));
+      return { logs: [...filtered, ...newLogs] };
+    });
   },
 
   addHabit: async (habit) => {

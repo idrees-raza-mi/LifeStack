@@ -1,15 +1,15 @@
 import { Redirect } from 'expo-router';
-import { View, ActivityIndicator } from 'react-native';
-import { useAuthStore } from '../src/store/authStore';
-import { Colors } from '../src/constants';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { Icon } from 'react-native-paper';
 
 export default function Index() {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, isLoading } = require('../src/store/authStore').useAuthStore();
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+      <View style={styles.container}>
+        <Icon source="checkbox-marked-circle-outline" size={64} color="#6750A4" />
+        <ActivityIndicator size="large" color="#6750A4" style={{ marginTop: 24 }} />
       </View>
     );
   }
@@ -20,3 +20,7 @@ export default function Index() {
 
   return <Redirect href="/(auth)/login" />;
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF' },
+});
