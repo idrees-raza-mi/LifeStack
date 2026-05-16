@@ -71,6 +71,32 @@ export default function ProfileScreen() {
         </View>
       </Card>
 
+      {/* More Features — Quick Access */}
+      <SectionHeader title="All Features" />
+      <View style={styles.featureGrid}>
+        <TouchableOpacity style={[styles.featureCard, { backgroundColor: Colors.lavenderLight }]} onPress={() => router.push('/(tabs)/goals')} activeOpacity={0.7}>
+          <View style={styles.featureIcon}>
+            <Icon source="target" size={24} color={Colors.primary} />
+          </View>
+          <Text style={styles.featureName}>Goals</Text>
+          <Text style={styles.featureCount}>3 active</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.featureCard, { backgroundColor: Colors.skyBlueLight }]} onPress={() => router.push('/(tabs)/routines')} activeOpacity={0.7}>
+          <View style={styles.featureIcon}>
+            <Icon source="repeat-variant" size={24} color={Colors.secondary} />
+          </View>
+          <Text style={styles.featureName}>Routines</Text>
+          <Text style={styles.featureCount}>5 total</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.featureCard, { backgroundColor: Colors.roseLight }]} onPress={() => router.push('/(tabs)/gym')} activeOpacity={0.7}>
+          <View style={styles.featureIcon}>
+            <Icon source="dumbbell" size={24} color={Colors.accent} />
+          </View>
+          <Text style={styles.featureName}>Gym</Text>
+          <Text style={styles.featureCount}>Track workouts</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Quote */}
       <Card style={[styles.quoteCard, { backgroundColor: Colors.lavenderLight }]}>
         <Icon source="format-quote-open" size={20} color={Colors.primary} />
@@ -155,6 +181,18 @@ const styles = StyleSheet.create({
   levelRewards: { flexDirection: 'row', alignItems: 'center', marginTop: 14, gap: 4 },
   dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: Colors.textTertiary, marginHorizontal: 6 },
   levelRewardText: { fontSize: 11, color: Colors.textSecondary, fontWeight: '500' },
+  featureGrid: { flexDirection: 'row', gap: 10, marginBottom: 20 },
+  featureCard: {
+    flex: 1, borderRadius: 20, padding: 16, alignItems: 'center',
+    ...ShadowStyle.card,
+  },
+  featureIcon: {
+    width: 48, height: 48, borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    justifyContent: 'center', alignItems: 'center', marginBottom: 8,
+  },
+  featureName: { fontSize: 13, fontWeight: '700', color: Colors.text },
+  featureCount: { fontSize: 10, color: Colors.textSecondary, marginTop: 2 },
   quoteCard: { marginBottom: 16, alignItems: 'center' },
   quoteText: { fontSize: 14, color: Colors.text, textAlign: 'center', fontStyle: 'italic', marginTop: 8, lineHeight: 20 },
   weeklyCard: { marginBottom: 16 },

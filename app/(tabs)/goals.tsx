@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, FAB, Dialog, Portal, TextInput, Button, IconButton, Icon, ProgressBar } from 'react-native-paper';
+import { router } from 'expo-router';
 import { ScreenWrapper, Card } from '../../src/components/ui/ScreenWrapper';
 import { PageHeader, SectionHeader, StatCard } from '../../src/components/ui/PageHeader';
 import { EmptyState } from '../../src/components/ui/EmptyState';
@@ -93,6 +94,9 @@ export default function GoalsScreen() {
 
   return (
     <ScreenWrapper>
+      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
+        <Icon source="arrow-left" size={22} color={Colors.text} />
+      </TouchableOpacity>
       <PageHeader
         title="Goals"
         subtitle={`${activeGoals} active · ${completedGoals} done`}
@@ -159,6 +163,7 @@ const styles = StyleSheet.create({
   milestoneDone: { textDecorationLine: 'line-through', color: Colors.textTertiary },
   addMilestoneRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
   milestoneInput: { flex: 1, backgroundColor: Colors.background, borderRadius: 12, paddingHorizontal: 12 },
+  backBtn: { marginBottom: 4, width: 36, height: 36, borderRadius: 12, backgroundColor: Colors.lavenderLight, justifyContent: 'center', alignItems: 'center' },
   dialog: { borderRadius: 28, backgroundColor: Colors.card },
   dialogTitle: { fontSize: 22, fontWeight: '700', color: Colors.text },
   dialogInput: { marginBottom: 12, backgroundColor: Colors.background },

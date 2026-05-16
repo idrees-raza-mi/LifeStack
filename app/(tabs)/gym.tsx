@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, FlatList, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, FAB, Dialog, Portal, TextInput, Button, IconButton, Icon, Chip } from 'react-native-paper';
+import { router } from 'expo-router';
 import { ScreenWrapper, Card } from '../../src/components/ui/ScreenWrapper';
 import { PageHeader, StatCard, SectionHeader } from '../../src/components/ui/PageHeader';
 import { EmptyState } from '../../src/components/ui/EmptyState';
@@ -121,6 +122,9 @@ export default function GymScreen() {
 
   return (
     <ScreenWrapper>
+      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
+        <Icon source="arrow-left" size={22} color={Colors.text} />
+      </TouchableOpacity>
       <PageHeader title="Gym" subtitle={`${sessions.length} workouts`} icon="dumbbell" />
       <View style={styles.statsRow}>
         <StatCard icon="dumbbell" label="Workouts" value={String(sessions.length)} color={Colors.primary} />
@@ -173,6 +177,7 @@ const styles = StyleSheet.create({
   sessionDate: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
   sessionDuration: { fontSize: 14, fontWeight: '700', color: Colors.primary },
   sessionNotes: { fontSize: 13, color: Colors.textSecondary, marginTop: 8 },
+  backBtn: { marginBottom: 4, width: 36, height: 36, borderRadius: 12, backgroundColor: Colors.lavenderLight, justifyContent: 'center', alignItems: 'center' },
   dialog: { borderRadius: 28, backgroundColor: Colors.card },
   dialogTitle: { fontSize: 22, fontWeight: '700', color: Colors.text },
 });
