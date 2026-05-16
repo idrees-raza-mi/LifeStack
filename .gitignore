@@ -2,6 +2,9 @@
 
 # dependencies
 node_modules/
+.env
+.expo/
+dist/
 
 # Expo
 .expo/
@@ -39,3 +42,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# AI memory (not committed)
+memory.md
