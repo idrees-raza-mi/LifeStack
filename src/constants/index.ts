@@ -86,24 +86,26 @@ export const SleepGoal = 8;
 
 export const ShadowStyle = {
   card: {
-    shadowColor: Colors.shadow,
+    shadowColor: '#7C6FCD',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 4,
   },
   elevated: {
-    shadowColor: Colors.shadowStrong,
+    shadowColor: '#7C6FCD',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.12,
     shadowRadius: 24,
     elevation: 8,
   },
   floating: {
-    shadowColor: Colors.shadowStrong,
+    shadowColor: '#7C6FCD',
     shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.15,
     shadowRadius: 32,
     elevation: 12,
   },
 };
+
+export const TAB_BAR_HEIGHT = 64;

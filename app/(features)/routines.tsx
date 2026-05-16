@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, FAB, Dialog, Portal, TextInput, Button, IconButton, Icon, Chip } from 'react-native-paper';
+import { Text, Dialog, Portal, TextInput, Button, IconButton, Icon, Chip } from 'react-native-paper';
 import { router } from 'expo-router';
 import { ScreenWrapper, Card } from '../../src/components/ui/ScreenWrapper';
 import { PageHeader, StatCard, SectionHeader } from '../../src/components/ui/PageHeader';
@@ -101,7 +101,10 @@ export default function RoutinesScreen() {
   };
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper
+      noTab
+      onFabPress={() => setDialogVisible(true)}
+    >
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
         <Icon source="arrow-left" size={22} color={Colors.text} />
       </TouchableOpacity>
@@ -147,7 +150,6 @@ export default function RoutinesScreen() {
         </Dialog>
       </Portal>
 
-      <FAB icon="plus" style={styles.fab} color={Colors.white} onPress={() => setDialogVisible(true)} />
     </ScreenWrapper>
   );
 }
@@ -189,9 +191,4 @@ const styles = StyleSheet.create({
   daysSelectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   dayChip: { backgroundColor: Colors.lavenderLight, borderRadius: 14, borderWidth: 0 },
   dayChipActive: { backgroundColor: Colors.primary },
-  fab: {
-    position: 'absolute', right: 20, bottom: 20,
-    backgroundColor: Colors.primary, borderRadius: 20,
-    ...ShadowStyle.floating,
-  },
 });

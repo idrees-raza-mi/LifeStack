@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { View, FlatList, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, FAB, Dialog, Portal, TextInput, Button, IconButton, Icon, Chip } from 'react-native-paper';
+import { Text, Dialog, Portal, TextInput, Button, IconButton, Icon, Chip } from 'react-native-paper';
 import { router } from 'expo-router';
 import { ScreenWrapper, Card } from '../../src/components/ui/ScreenWrapper';
 import { PageHeader, StatCard, SectionHeader } from '../../src/components/ui/PageHeader';
@@ -54,7 +54,10 @@ export default function GymScreen() {
     currentSets.forEach(s => { if (!groupedSets[s.exerciseId]) groupedSets[s.exerciseId] = []; groupedSets[s.exerciseId].push(s); });
 
     return (
-      <ScreenWrapper>
+      <ScreenWrapper
+        noTab
+        onFabPress={() => setDialogVisible(true)}
+      >
         <View style={styles.activeHeader}>
           <View>
             <Text style={styles.activeTitle}>{currentSession.name}</Text>
@@ -126,7 +129,10 @@ export default function GymScreen() {
   }
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper
+      noTab
+      onFabPress={() => setDialogVisible(true)}
+    >
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
         <Icon source="arrow-left" size={22} color={Colors.text} />
       </TouchableOpacity>
@@ -151,7 +157,6 @@ export default function GymScreen() {
           </Card>
         )} keyExtractor={item => item.id} showsVerticalScrollIndicator={false} contentContainerStyle={styles.list} />
       )}
-      <FAB icon="dumbbell" label="Start" style={styles.fab} color={Colors.white} onPress={() => setDialogVisible(true)} />
     </ScreenWrapper>
   );
 }
@@ -160,7 +165,6 @@ const styles = StyleSheet.create({
   list: { paddingBottom: 100 },
   scroll: { paddingBottom: 40 },
   statsRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
-  fab: { position: 'absolute', right: 20, bottom: 20, backgroundColor: Colors.primary, borderRadius: 20, ...ShadowStyle.floating },
   activeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, marginBottom: 8 },
   activeTitle: { fontSize: 22, fontWeight: '800', color: Colors.text },
   activeDate: { fontSize: 13, color: Colors.textSecondary, marginTop: 2 },

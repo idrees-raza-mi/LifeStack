@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, FAB, Dialog, Portal, TextInput, Button, IconButton, Icon, ProgressBar } from 'react-native-paper';
+import { Text, Dialog, Portal, TextInput, Button, IconButton, Icon, ProgressBar } from 'react-native-paper';
 import { router } from 'expo-router';
 import { ScreenWrapper, Card } from '../../src/components/ui/ScreenWrapper';
 import { PageHeader, SectionHeader, StatCard } from '../../src/components/ui/PageHeader';
@@ -93,7 +93,10 @@ export default function GoalsScreen() {
   };
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper
+      noTab
+      onFabPress={() => setDialogVisible(true)}
+    >
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
         <Icon source="arrow-left" size={22} color={Colors.text} />
       </TouchableOpacity>
@@ -134,7 +137,6 @@ export default function GoalsScreen() {
         </Dialog>
       </Portal>
 
-      <FAB icon="plus" style={styles.fab} color={Colors.white} onPress={() => setDialogVisible(true)} />
     </ScreenWrapper>
   );
 }
@@ -167,9 +169,4 @@ const styles = StyleSheet.create({
   dialog: { borderRadius: 28, backgroundColor: Colors.card },
   dialogTitle: { fontSize: 22, fontWeight: '700', color: Colors.text },
   dialogInput: { marginBottom: 12, backgroundColor: Colors.background },
-  fab: {
-    position: 'absolute', right: 20, bottom: 20,
-    backgroundColor: Colors.primary, borderRadius: 20,
-    ...ShadowStyle.floating,
-  },
 });

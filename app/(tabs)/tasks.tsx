@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, FAB, Dialog, Portal, TextInput, Button, IconButton, Icon, Chip } from 'react-native-paper';
+import { Text, Dialog, Portal, TextInput, Button, IconButton, Icon, Chip } from 'react-native-paper';
 import { ScreenWrapper, Card } from '../../src/components/ui/ScreenWrapper';
 import { PageHeader, SectionHeader, StatCard } from '../../src/components/ui/PageHeader';
 import { EmptyState } from '../../src/components/ui/EmptyState';
@@ -61,7 +61,7 @@ export default function TasksScreen() {
   );
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper onFabPress={() => setDialogVisible(true)}>
       <PageHeader
         title="Tasks"
         subtitle={`${pendingTasks} pending`}
@@ -134,7 +134,6 @@ export default function TasksScreen() {
         </Dialog>
       </Portal>
 
-      <FAB icon="plus" style={styles.fab} color={Colors.white} onPress={() => setDialogVisible(true)} />
     </ScreenWrapper>
   );
 }
@@ -179,9 +178,4 @@ const styles = StyleSheet.create({
     borderRadius: 14, borderWidth: 1.5, borderColor: Colors.cardBorder,
   },
   priorityBtnText: { fontSize: 13, fontWeight: '700', textTransform: 'capitalize' },
-  fab: {
-    position: 'absolute', right: 20, bottom: 20,
-    backgroundColor: Colors.primary, borderRadius: 20,
-    ...ShadowStyle.floating,
-  },
 });

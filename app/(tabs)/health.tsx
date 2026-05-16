@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, TextInput, Button, Icon } from 'react-native-paper';
+import { Text, TextInput, Button, Icon, Dialog, Portal } from 'react-native-paper';
 import { ScreenWrapper, Card } from '../../src/components/ui/ScreenWrapper';
 import { PageHeader, StatCard, SectionHeader } from '../../src/components/ui/PageHeader';
 import { ProgressCard } from '../../src/components/ui/StatCard';
@@ -18,6 +18,7 @@ export default function HealthScreen() {
   const [weight, setWeight] = useState('');
   const [mood, setMood] = useState(2);
   const [calories, setCalories] = useState('');
+  const [dialogVisible, setDialogVisible] = useState(false);
 
   useEffect(() => {
     const start = format(new Date().setDate(new Date().getDate() - 7), 'yyyy-MM-dd');
@@ -48,10 +49,14 @@ export default function HealthScreen() {
       weightKg: weight ? parseFloat(weight) : undefined,
       calories: calories ? parseInt(calories) : undefined,
     });
+    setDialogVisible(false);
   };
 
   return (
-    <ScreenWrapper scroll>
+    <ScreenWrapper
+      scroll
+      onFabPress={() => setDialogVisible(true)}
+    >
       <PageHeader title="Health" subtitle={format(new Date(), 'EEEE, MMM d')} icon="heart-pulse" />
 
       <View style={styles.moodRow}>
@@ -111,12 +116,27 @@ export default function HealthScreen() {
           contentStyle={{ paddingVertical: 6 }}
         >Save Entry</Button>
       </Card>
-      <View style={{ height: 40 }} />
+      <View style={{ height: 80 }} />
+
+      <Portal>
+        <Dialog visible={dialogVisible} onDismiss={() => setDialogVisible(false)} style={styles.dialog}>
+          <Dialog.Title style={styles.dialogTitle}>New Health Entry</Dialog.Title>
+          <Dialog.Content>
+            <TextInput label="Steps" value={steps} onChangeText={setSteps} keyboardType="number-pad" mode="outlined" style={styles.dialogInput} outlineStyle={{ borderRadius: 16, borderColor: Colors.cardBorder }} />
+            <TextInput label="Water (ml)" value={water} onChangeText={setWater} keyboardType="number-pad" mode="outlined" style={styles.dialogInput} outlineStyle={{ borderRadius: 16, borderColor: Colors.cardBorder }} />
+            <TextInput label="Calories" value={calories} onChangeText={setCalories} keyboardType="number-pad" mode="outlined" style={styles.dialogInput} outlineStyle={{ borderRadius: 16, borderColor: Colors.cardBorder }} />
+            <TextInput label="Sleep (hrs)" value={sleep} onChangeText={setSleep} keyboardType="decimal-pad" mode="outlined" style={styles.dialogInput} outlineStyle={{ borderRadius: 16, borderColor: Colors.cardBorder }} />
+            <TextInput label="Weight (kg)" value={weight} onChangeText={setWeight} keyboardType="decimal-pad" mode="outlined" style={styles.dialogInput} outlineStyle={{ borderRadius: 16, borderColor: Colors.cardBorder }} />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setDialogVisible(false)} textColor={Colors.textTertiary}>Cancel</Button>
+            <Button onPress={handleSave} buttonColor={Colors.primary} textColor={Colors.white} style={{ borderRadius: 12 }}>Save</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </ScreenWrapper>
   );
 }
-
-
 
 const styles = StyleSheet.create({
   moodRow: { flexDirection: 'row', justifyContent: 'center', gap: 12, marginBottom: 16 },
@@ -132,4 +152,7 @@ const styles = StyleSheet.create({
   inputGroup: { width: '46%' },
   inputLabel: { fontSize: 12, color: Colors.textSecondary, marginBottom: 4, fontWeight: '600' },
   input: { backgroundColor: Colors.background },
+  dialog: { borderRadius: 28, backgroundColor: Colors.card },
+  dialogTitle: { fontSize: 22, fontWeight: '700', color: Colors.text },
+  dialogInput: { marginBottom: 12, backgroundColor: Colors.background },
 });

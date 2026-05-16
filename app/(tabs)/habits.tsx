@@ -1,14 +1,16 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { View, FlatList, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { Text, FAB, Dialog, Portal, TextInput, Button, IconButton, Icon, Chip } from 'react-native-paper';
+import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { Text, Dialog, Portal, TextInput, Button, IconButton, Icon, Chip } from 'react-native-paper';
+import Svg, { Circle } from 'react-native-svg';
 import { ScreenWrapper, Card } from '../../src/components/ui/ScreenWrapper';
 import { PageHeader, StatCard, SectionHeader } from '../../src/components/ui/PageHeader';
 import { HabitCard } from '../../src/components/ui/StatCard';
 import { EmptyState } from '../../src/components/ui/EmptyState';
 import { useHabitStore } from '../../src/store/habitStore';
+import { useTaskStore } from '../../src/store/taskStore';
 import { Habit } from '../../src/types';
 import { Colors, HabitColors, HabitIcons, ShadowStyle } from '../../src/constants';
-import { format, addDays, startOfWeek, subDays, isSameDay, parseISO } from 'date-fns';
+import { format, addDays, startOfWeek, subDays, isSameDay, parseISO, isToday } from 'date-fns';
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -30,6 +32,7 @@ function computeStreak(logs: { habitId: string; date: string; completed: boolean
 
 export default function HabitsScreen() {
   const { habits, loadHabits, addHabit, toggleLog, logs, loadLogs } = useHabitStore();
+  const { tasks, loadTasks } = useTaskStore();
   const [dialogVisible, setDialogVisible] = useState(false);
   const [name, setName] = useState('');
   const [icon, setIcon] = useState(HabitIcons[0]);
@@ -39,6 +42,7 @@ export default function HabitsScreen() {
 
   useEffect(() => {
     loadHabits();
+    loadTasks();
   }, []);
 
   useEffect(() => {
@@ -53,7 +57,13 @@ export default function HabitsScreen() {
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   const completedToday = habits.filter(h => logs.some(l => l.habitId === h.id && l.date === today && l.completed)).length;
+  const tasksDoneToday = tasks.filter(t => t.completed && t.completedAt && isToday(parseISO(t.completedAt))).length;
+
   const weeklyProgress = habits.length > 0 ? Math.round((completedToday / habits.length) * 100) : 0;
+  const ringRadius = 36;
+  const ringStroke = 6;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const ringOffset = ringCircumference - (weeklyProgress / 100) * ringCircumference;
 
   const maxStreak = useMemo(() => {
     if (habits.length === 0) return 0;
@@ -85,7 +95,10 @@ export default function HabitsScreen() {
   };
 
   return (
-    <ScreenWrapper scroll>
+    <ScreenWrapper
+      scroll
+      onFabPress={() => setDialogVisible(true)}
+    >
       <PageHeader
         title="My Habits"
         subtitle={`${completedToday}/${habits.length} done today`}
@@ -98,25 +111,45 @@ export default function HabitsScreen() {
         }
       />
 
-      {/* Weekly Progress Card */}
-      <Card style={styles.progressCard}>
-        <View style={styles.progressCardContent}>
-          <View style={styles.progressRing}>
-            <View style={[styles.ringOuter, { borderColor: Colors.lavenderLight }]}>
-              <View style={styles.ringInner}>
-                <Text style={styles.ringValue}>{weeklyProgress}%</Text>
-                <Text style={styles.ringLabel}>Today</Text>
-              </View>
+      {/* Gradient Progress Card */}
+      <View style={styles.gradientCard}>
+        <View style={styles.gradientCardContent}>
+          <View style={styles.gradientCardLeft}>
+            <View style={styles.gradientMetric}>
+              <Icon source="checkbox-marked-circle-outline" size={16} color={Colors.white} />
+              <Text style={styles.gradientMetricValue}>{completedToday}</Text>
+              <Text style={styles.gradientMetricLabel}>habits</Text>
+            </View>
+            <View style={styles.gradientMetric}>
+              <Icon source="format-list-checks" size={16} color={Colors.white} />
+              <Text style={styles.gradientMetricValue}>{tasksDoneToday}</Text>
+              <Text style={styles.gradientMetricLabel}>tasks</Text>
+            </View>
+            <View style={styles.emojiWrap}>
+              <Text style={styles.emojiText}>{weeklyProgress >= 80 ? '🔥' : weeklyProgress >= 50 ? '💪' : '🌱'}</Text>
             </View>
           </View>
-          <View style={styles.progressStats}>
-            <StatCard icon="fire" label="Streak" value={`${maxStreak} days`} color={Colors.peach} />
-            <StatCard icon="calendar-check" label="This Week" value={weekDisplay} color={Colors.primary} />
+          <View style={styles.gradientCardRight}>
+            <Svg width={90} height={90}>
+              <Circle cx={45} cy={45} r={ringRadius} stroke="rgba(255,255,255,0.25)" strokeWidth={ringStroke} fill="none" />
+              <Circle
+                cx={45} cy={45} r={ringRadius}
+                stroke={Colors.white}
+                strokeWidth={ringStroke}
+                fill="none"
+                strokeDasharray={ringCircumference}
+                strokeDashoffset={ringOffset}
+                strokeLinecap="round"
+                transform="rotate(-90, 45, 45)"
+              />
+            </Svg>
+            <Text style={styles.gradientRingValue}>{weeklyProgress}%</Text>
+            <Text style={styles.gradientRingLabel}>today</Text>
           </View>
         </View>
-      </Card>
+      </View>
 
-      {/* Date Selector */}
+      {/* Redesigned Date Selector */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateRow} contentContainerStyle={styles.dateContent}>
         {weekDays.map((day, i) => {
           const dateStr = format(day, 'yyyy-MM-dd');
@@ -132,7 +165,9 @@ export default function HabitsScreen() {
             >
               <Text style={[styles.dateDay, active && styles.dateDayActive]}>{WEEKDAYS[i]}</Text>
               <Text style={[styles.dateNum, active && styles.dateNumActive]}>{format(day, 'd')}</Text>
-              {dayDone > 0 && <View style={[styles.dateDot, { backgroundColor: Colors.primary }]} />}
+              <View style={styles.dateDots}>
+                {dayDone > 0 && <View style={[styles.dateDot, { backgroundColor: Colors.primary }]} />}
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -229,29 +264,70 @@ export default function HabitsScreen() {
           </Dialog.Actions>
         </Dialog>
       </Portal>
-
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        color={Colors.white}
-        onPress={() => setDialogVisible(true)}
-      />
     </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  progressCard: { marginBottom: 16 },
-  progressCardContent: { flexDirection: 'row', alignItems: 'center' },
-  progressRing: { marginRight: 16 },
-  ringOuter: {
-    width: 90, height: 90, borderRadius: 45, borderWidth: 4,
-    justifyContent: 'center', alignItems: 'center',
+  gradientCard: {
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 16,
+    backgroundColor: '#7C6FCD',
+    shadowColor: '#7C6FCD',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  ringInner: { alignItems: 'center' },
-  ringValue: { fontSize: 22, fontWeight: '800', color: Colors.primary },
-  ringLabel: { fontSize: 10, color: Colors.textSecondary, marginTop: -2 },
-  progressStats: { flex: 1 },
+  gradientCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  gradientCardLeft: {
+    flex: 1,
+    gap: 12,
+  },
+  gradientMetric: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  gradientMetricValue: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: Colors.white,
+  },
+  gradientMetricLabel: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.8)',
+    fontWeight: '600',
+  },
+  emojiWrap: {
+    marginTop: 8,
+  },
+  emojiText: {
+    fontSize: 28,
+  },
+  gradientCardRight: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  gradientRingValue: {
+    position: 'absolute',
+    top: 28,
+    fontSize: 18,
+    fontWeight: '800',
+    color: Colors.white,
+  },
+  gradientRingLabel: {
+    position: 'absolute',
+    bottom: 18,
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.7)',
+    fontWeight: '600',
+  },
   streakBadgeLarge: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.peachLight,
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16,
@@ -261,15 +337,16 @@ const styles = StyleSheet.create({
   dateRow: { marginBottom: 16 },
   dateContent: { gap: 10, paddingVertical: 4 },
   dateItem: {
-    alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10,
-    borderRadius: 18, backgroundColor: Colors.card, ...ShadowStyle.card,
+    alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12,
+    borderRadius: 20, backgroundColor: Colors.card, ...ShadowStyle.card,
   },
   dateItemActive: { backgroundColor: Colors.primary },
-  dateDay: { fontSize: 11, color: Colors.textSecondary, fontWeight: '600' },
-  dateDayActive: { color: Colors.white },
-  dateNum: { fontSize: 18, fontWeight: '700', color: Colors.text, marginTop: 2 },
+  dateDay: { fontSize: 11, color: Colors.textSecondary, fontWeight: '600', marginBottom: 2 },
+  dateDayActive: { color: 'rgba(255,255,255,0.8)' },
+  dateNum: { fontSize: 18, fontWeight: '700', color: Colors.text },
   dateNumActive: { color: Colors.white },
-  dateDot: { width: 5, height: 5, borderRadius: 3, marginTop: 4 },
+  dateDots: { height: 8, justifyContent: 'center', alignItems: 'center', marginTop: 4 },
+  dateDot: { width: 5, height: 5, borderRadius: 3 },
   tabRow: {
     flexDirection: 'row', backgroundColor: Colors.lavenderLight,
     borderRadius: 16, padding: 4, marginBottom: 16,
@@ -281,11 +358,6 @@ const styles = StyleSheet.create({
   tabBtnActive: { backgroundColor: Colors.white, ...ShadowStyle.card },
   tabText: { fontSize: 14, fontWeight: '600', color: Colors.textTertiary },
   tabTextActive: { color: Colors.primary },
-  fab: {
-    position: 'absolute', right: 20, bottom: 90,
-    backgroundColor: Colors.primary, borderRadius: 20,
-    ...ShadowStyle.floating,
-  },
   dialog: { borderRadius: 28, backgroundColor: Colors.card },
   dialogTitle: { fontSize: 22, fontWeight: '700', color: Colors.text },
   dialogInput: { marginBottom: 16, backgroundColor: Colors.background },
