@@ -1,51 +1,108 @@
 export const Colors = {
-  primary: '#2563EB',
-  primaryContainer: '#DBEAFE',
-  onPrimaryContainer: '#1E40AF',
-  secondary: '#7C3AED',
-  secondaryContainer: '#EDE9FE',
-  onSecondaryContainer: '#5B21B6',
-  tertiary: '#059669',
-  tertiaryContainer: '#D1FAE5',
-  error: '#DC2626',
-  errorContainer: '#FEE2E2',
+  primary: '#7C6FCD',
+  primaryDark: '#6A5DBF',
+  primaryLight: '#C5BDF0',
+  secondary: '#A8D8EA',
+  secondaryDark: '#8FC8DC',
+  secondaryLight: '#D4EEF5',
+  accent: '#F0C4D0',
+  accentLight: '#F8DFE8',
+  success: '#A8D8A8',
+  successDark: '#7CC47C',
+  warning: '#F5D7A8',
+  error: '#E8A8A8',
+  errorDark: '#D47C7C',
+  background: '#F8F7FF',
   surface: '#FFFFFF',
-  surfaceVariant: '#F8FAFC',
-  background: '#FFFFFF',
-  outline: '#E2E8F0',
-  outlineVariant: '#CBD5E1',
-  text: '#0F172A',
-  textSecondary: '#64748B',
-  textTertiary: '#94A3B8',
+  surfaceElevated: '#FFFFFF',
+  card: '#FFFFFF',
+  cardBorder: 'rgba(124, 111, 205, 0.10)',
+  text: '#1A1A2E',
+  textSecondary: '#6B7280',
+  textTertiary: '#9CA3AF',
+  textInverse: '#FFFFFF',
+  shadow: 'rgba(124, 111, 205, 0.10)',
+  shadowStrong: 'rgba(124, 111, 205, 0.18)',
+  gradientStart: '#C5BDF0',
+  gradientEnd: '#D4EEF5',
+  overlay: 'rgba(26, 26, 46, 0.4)',
+  lavender: '#C5BDF0',
+  lavenderLight: '#EEEAFF',
+  skyBlue: '#A8D8EA',
+  skyBlueLight: '#E8F6FB',
+  rose: '#F0C4D0',
+  roseLight: '#FDE8EE',
+  mint: '#A8D8A8',
+  mintLight: '#E8F5E8',
+  peach: '#F5D7A8',
+  peachLight: '#FDF0E0',
   white: '#FFFFFF',
   black: '#000000',
 };
 
 export const HabitColors = [
-  '#2563EB', '#7C3AED', '#059669', '#DC2626',
-  '#D97706', '#0891B2', '#DB2777', '#65A30D',
+  '#7C6FCD', '#A8D8EA', '#F0C4D0', '#A8D8A8',
+  '#F5D7A8', '#C5BDF0', '#D4EEF5', '#F8DFE8',
 ];
 
 export const HabitIcons = [
-  'book', 'fitness', 'water', 'bed', 'cafe',
-  'walk', 'barbell', 'meditation', 'bicycle', 'sunny',
+  'star', 'heart', 'book', 'run', 'water',
+  'bed', 'cafe', 'meditation', 'yoga', 'walk',
+  'fire', 'music', 'palette', 'leaf', 'moon',
 ];
 
 export const PriorityColors: Record<string, string> = {
-  low: '#65A30D',
-  medium: '#D97706',
-  high: '#DC2626',
+  low: '#A8D8A8',
+  medium: '#F5D7A8',
+  high: '#E8A8A8',
 };
 
 export const CategoryColors: Record<string, string> = {
-  work: '#2563EB',
-  personal: '#7C3AED',
-  health: '#059669',
-  finance: '#D97706',
-  education: '#0891B2',
-  social: '#DB2777',
+  work: '#7C6FCD',
+  personal: '#F0C4D0',
+  health: '#A8D8A8',
+  finance: '#F5D7A8',
+  education: '#A8D8EA',
+  social: '#C5BDF0',
 };
 
 export const ExerciseCategories = [
   'chest', 'back', 'legs', 'shoulders', 'arms', 'core', 'cardio', 'full_body',
 ];
+
+export const AchievementColors: Record<string, string> = {
+  bronze: '#CD7F32',
+  silver: '#9CA3AF',
+  gold: '#FFD700',
+  diamond: '#B9F2FF',
+  platinum: '#E5E4E2',
+};
+
+export const MoodEmojis = ['😊', '😌', '😐', '😢', '😡'];
+export const WaterIntakeGoal = 2000;
+export const StepGoal = 10000;
+export const SleepGoal = 8;
+
+export const ShadowStyle = {
+  card: {
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  elevated: {
+    shadowColor: Colors.shadowStrong,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  floating: {
+    shadowColor: Colors.shadowStrong,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.2,
+    shadowRadius: 32,
+    elevation: 12,
+  },
+};
